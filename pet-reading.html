@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ironbreaker Foresees — Pet Reading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=Karla:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1B1416;
+  --paper:#F3EAE0;
+  --paper-dim:#BFB0A6;
+  --amber:#D9A15B;
+  --sage:#93A68B;
+  --rose:#C08578;
+  --line:rgba(243,234,224,.14);
+  --line-2:rgba(243,234,224,.28);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Karla",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ink);
+  background-image:
+    radial-gradient(120% 70% at 50% -10%, rgba(217,161,91,.16) 0%, rgba(217,161,91,0) 60%),
+    radial-gradient(90% 60% at 50% 110%, rgba(147,166,139,.10) 0%, rgba(147,166,139,0) 65%);
+  background-attachment:fixed;
+  color:var(--paper);
+  font-family:var(--body);
+  font-weight:300;
+  line-height:1.6;
+  min-height:100vh;
+  min-height:100dvh;
+}
+.wrap{max-width:660px;margin:0 auto;padding:28px 22px 80px}
+
+/* ---------- intro ---------- */
+#intro{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 22px}
+.eyebrow{font-family:var(--body);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--amber);font-weight:500}
+h1{font-family:var(--display);font-weight:300;font-size:clamp(38px,10vw,62px);line-height:1.02;margin:18px 0 0;letter-spacing:-.02em}
+h1 em{font-style:italic;color:var(--amber)}
+.lede{max-width:34ch;margin:20px auto 0;color:var(--paper-dim);font-size:16px}
+
+.pad-wrap{margin-top:46px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.pad{
+  width:172px;height:172px;border-radius:50%;
+  border:1px solid var(--line-2);
+  background:radial-gradient(circle at 50% 45%, rgba(217,161,91,.10), rgba(217,161,91,0) 70%);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;cursor:pointer;touch-action:none;
+  transition:border-color .3s ease, transform .3s ease;
+}
+.pad:active{transform:scale(.98)}
+.pad:focus-visible{outline:2px solid var(--amber);outline-offset:6px}
+.pad svg{width:96px;height:96px;overflow:visible}
+.paw-outline{fill:none;stroke:var(--line-2);stroke-width:1.5}
+.paw-fill{fill:var(--amber)}
+.pad-hint{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--paper-dim)}
+.pad.done{border-color:rgba(217,161,91,.6)}
+
+/* ---------- shell ---------- */
+#app{display:none}
+header.bar{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(to bottom,var(--ink) 62%,rgba(27,20,22,0));
+  padding:18px 0 22px;
+}
+.bar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.mark{font-family:var(--body);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--paper-dim)}
+.steps{display:flex;gap:9px;align-items:center}
+.step-dot{width:13px;height:13px;opacity:.28;transition:opacity .35s ease}
+.step-dot svg{width:13px;height:13px;display:block}
+.step-dot path{fill:var(--paper)}
+.step-dot.on{opacity:1}
+.step-dot.on path{fill:var(--amber)}
+
+.chapter{display:none;animation:rise .5s cubic-bezier(.2,.7,.3,1)}
+.chapter.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.ch-no{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--sage)}
+h2{font-family:var(--display);font-weight:300;font-size:clamp(28px,7vw,40px);line-height:1.1;margin:10px 0 6px;letter-spacing:-.015em}
+.ch-note{color:var(--paper-dim);font-size:15px;margin:0 0 34px;max-width:44ch}
+
+/* ---------- fields ---------- */
+.field{margin:0 0 32px}
+label.q{display:block;font-family:var(--display);font-size:19px;font-weight:400;line-height:1.35;margin-bottom:12px}
+.opt{font-family:var(--body);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--sage);margin-left:8px;white-space:nowrap}
+.hint{display:block;font-family:var(--body);font-size:13.5px;color:var(--paper-dim);margin-top:-4px;margin-bottom:12px;font-weight:300}
+input[type=text],textarea{
+  width:100%;background:rgba(243,234,224,.045);border:1px solid var(--line);
+  border-radius:3px;color:var(--paper);font-family:var(--body);font-size:16px;font-weight:300;
+  padding:13px 14px;transition:border-color .25s ease,background .25s ease;
+}
+input[type=text]:focus,textarea:focus{outline:none;border-color:var(--amber);background:rgba(243,234,224,.07)}
+textarea{resize:vertical;min-height:92px;line-height:1.55}
+textarea.tall{min-height:190px}
+.counter{font-size:11px;color:var(--paper-dim);text-align:right;margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{
+  font-family:var(--body);font-size:14px;font-weight:400;color:var(--paper);
+  background:transparent;border:1px solid var(--line-2);border-radius:999px;
+  padding:9px 16px;cursor:pointer;transition:all .2s ease;
+}
+.chip:hover{border-color:var(--paper-dim)}
+.chip:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.chip.sel{background:var(--amber);border-color:var(--amber);color:#20160D;font-weight:500}
+.branch{display:none;border-left:1px solid var(--line);padding-left:20px;margin-top:26px}
+.branch.on{display:block}
+.tense-group{display:none}
+.tense-group.on{display:flex}
+.err{color:var(--rose);font-size:13px;margin-top:8px;display:none}
+.err.on{display:block}
+
+/* ---------- photos ---------- */
+.drop{
+  border:1px dashed var(--line-2);border-radius:4px;padding:26px 18px;text-align:center;
+  cursor:pointer;transition:border-color .25s ease,background .25s ease,opacity .25s ease;
+}
+.drop:hover{border-color:var(--amber);background:rgba(217,161,91,.05)}
+.drop.full{opacity:.5;cursor:not-allowed;pointer-events:none}
+.drop-t{font-family:var(--display);font-size:17px}
+.drop-s{font-size:13px;color:var(--paper-dim);margin-top:5px}
+.drop-note{font-size:12.5px;color:var(--rose);margin-top:10px;opacity:0;transition:opacity .3s ease;min-height:1px}
+.shots{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.shot{position:relative;width:78px;height:78px;border-radius:3px;overflow:hidden;border:1px solid var(--line-2)}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot button{
+  position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;
+  border:none;background:rgba(27,20,22,.82);color:var(--paper);font-size:14px;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+
+/* ---------- nav ---------- */
+.nav{display:flex;gap:12px;align-items:center;margin-top:44px;padding-top:26px;border-top:1px solid var(--line);flex-wrap:wrap}
+.go{
+  font-family:var(--body);font-size:14px;font-weight:500;letter-spacing:.06em;
+  background:var(--amber);color:#20160D;border:none;border-radius:3px;padding:14px 30px;cursor:pointer;
+  transition:filter .2s ease;
+}
+.go:hover{filter:brightness(1.08)}
+.go:disabled{opacity:.6;cursor:default}
+.back{
+  font-family:var(--body);font-size:14px;background:none;border:none;color:var(--paper-dim);
+  cursor:pointer;padding:14px 4px;text-decoration:underline;text-underline-offset:4px;display:inline-block;
+}
+.go:focus-visible,.back:focus-visible{outline:2px solid var(--paper);outline-offset:3px}
+
+/* ---------- review ---------- */
+.rev-block{border-top:1px solid var(--line);padding:20px 0}
+.rev-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+.rev-title{font-family:var(--display);font-size:19px}
+.rev-edit{font-family:var(--body);font-size:13px;background:none;border:none;color:var(--amber);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0}
+.rev-row{margin-top:12px}
+.rev-q{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--sage)}
+.rev-a{font-size:15.5px;margin-top:3px;white-space:pre-wrap}
+
+/* ---------- done ---------- */
+.done-card{border:1px solid var(--line-2);border-radius:4px;padding:26px 22px;margin-top:26px}
+.done-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.done-step:last-child{border-bottom:none}
+.done-n{font-family:var(--display);font-size:22px;color:var(--amber);line-height:1;min-width:22px}
+.done-txt{font-size:15px}
+#cardPreview{width:100%;border-radius:4px;border:1px solid var(--line-2);display:none;margin-top:22px}
+.sig{margin-top:44px;text-align:center;color:var(--paper-dim);font-size:13px}
+.sig strong{font-family:var(--display);font-weight:400;color:var(--paper);display:block;font-size:17px;letter-spacing:.02em}
+.disclaimer{margin-top:30px;font-size:11.5px;color:var(--paper-dim);line-height:1.5;text-align:center}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ INTRO ============ -->
+<section id="intro">
+  <p class="eyebrow">Ironbreaker Foresees</p>
+  <h1>Pet<br><em>Reading</em></h1>
+  <p class="lede">For the ones who are still here, and the ones who left too early. Press your thumb to the pad and leave a paw print to begin.</p>
+
+  <div class="pad-wrap">
+    <div class="pad" id="pad" role="button" tabindex="0" aria-label="Press and hold to begin">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <clipPath id="clip"><rect id="clipRect" x="0" y="100" width="100" height="100"/></clipPath>
+        </defs>
+        <g class="paw-outline">
+          <ellipse cx="50" cy="66" rx="22" ry="18"/>
+          <ellipse cx="27" cy="42" rx="9" ry="12"/>
+          <ellipse cx="43" cy="31" rx="8.5" ry="12"/>
+          <ellipse cx="60" cy="31" rx="8.5" ry="12"/>
+          <ellipse cx="74" cy="43" rx="9" ry="12"/>
+        </g>
+        <g class="paw-fill" clip-path="url(#clip)">
+          <ellipse cx="50" cy="66" rx="22" ry="18"/>
+          <ellipse cx="27" cy="42" rx="9" ry="12"/>
+          <ellipse cx="43" cy="31" rx="8.5" ry="12"/>
+          <ellipse cx="60" cy="31" rx="8.5" ry="12"/>
+          <ellipse cx="74" cy="43" rx="9" ry="12"/>
+        </g>
+      </svg>
+    </div>
+    <p class="pad-hint" id="padHint">Press and hold</p>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="app">
+<div class="wrap">
+
+  <header class="bar">
+    <div class="bar-inner">
+      <span class="mark">Pet Reading</span>
+      <div class="steps" id="steps"></div>
+    </div>
+  </header>
+
+  <!-- CH 1 -->
+  <section class="chapter on" data-ch="0">
+    <p class="ch-no">Chapter One</p>
+    <h2>Who they are</h2>
+    <p class="ch-note">Start with the plain facts. The rest of this is where the reading actually comes from.</p>
+
+    <div class="field">
+      <label class="q" for="f_name">What is their name?</label>
+      <input type="text" id="f_name" class="counted" maxlength="140" data-req data-label="Name">
+      <p class="err" id="e_name">Please tell me their name.</p>
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_nick">What do you call them, other than their name?<span class="opt">Optional</span></label>
+      <span class="hint">The silly one. The one only you use.</span>
+      <input type="text" id="f_nick" class="counted" maxlength="140" data-label="Nickname">
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_species">What are they?</label>
+      <span class="hint">Cat, dog, bird, rabbit — and the breed, if you know it.</span>
+      <input type="text" id="f_species" class="counted" maxlength="140" data-req data-label="Species / breed">
+      <p class="err" id="e_species">Please fill this in.</p>
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_age">How old are they?</label>
+      <span class="hint">If they've passed, how old were they then.</span>
+      <input type="text" id="f_age" class="counted" maxlength="140" data-req data-label="Age">
+      <p class="err" id="e_age">Please fill this in.</p>
+    </div>
+
+    <div class="field">
+      <label class="q">Where are they now?</label>
+      <div class="chips" data-single="status" data-label="Status">
+        <button type="button" class="chip">Still with me</button>
+        <button type="button" class="chip">I lost them</button>
+      </div>
+      <p class="err" id="e_status">Please choose one.</p>
+
+      <div class="branch" id="br_lost">
+        <div class="field">
+          <label class="q">When did you lose them?<span class="opt">Optional</span></label>
+          <div class="chips" data-single="when" data-label="Time since loss">
+            <button type="button" class="chip">Within the last month</button>
+            <button type="button" class="chip">1–6 months ago</button>
+            <button type="button" class="chip">6 months – 2 years</button>
+            <button type="button" class="chip">More than 2 years</button>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="q">How did it happen?<span class="opt">Optional</span></label>
+          <div class="chips" data-single="how" data-label="How it happened">
+            <button type="button" class="chip">Illness</button>
+            <button type="button" class="chip">Old age</button>
+            <button type="button" class="chip">Sudden, unexpected</button>
+            <button type="button" class="chip">An accident</button>
+            <button type="button" class="chip">Put to sleep</button>
+            <button type="button" class="chip">I'd rather not say</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav"><button class="go" data-next>Continue</button></div>
+  </section>
+
+  <!-- CH 2 -->
+  <section class="chapter" data-ch="1">
+    <p class="ch-no">Chapter Two</p>
+    <h2>Who they really are</h2>
+    <p class="ch-note">Skip anything you want. But the strange, specific details are the ones that make a reading land.</p>
+
+    <div class="field">
+      <label class="q">Which one is closest to them?</label>
+      <div class="chips" data-single="type" data-label="Their nature">
+        <button type="button" class="chip">A shadow — always at my heels</button>
+        <button type="button" class="chip">Independent, knows their own mind</button>
+        <button type="button" class="chip">A protector</button>
+        <button type="button" class="chip">Calm, a little distant</button>
+        <button type="button" class="chip">Restless mischief</button>
+        <button type="button" class="chip">All of it, depending on the day</button>
+      </div>
+      <p class="err" id="e_type">Please choose one.</p>
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_habit"><span class="qtext" data-alive="Do they have a strange little habit that is theirs alone?" data-lost="Did they have a strange little habit that was theirs alone?">Do they have a strange little habit that is theirs alone?</span><span class="opt">Optional</span></label>
+      <span class="hint">This is the one I most want to hear. The odd thing nobody else would understand.</span>
+      <textarea id="f_habit" class="counted" maxlength="140" data-label="Their strange habit"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_crazy"><span class="qtext" data-alive="Is there something they do that drives you completely mad?" data-lost="Was there something they did that used to drive you completely mad?">Is there something they do that drives you completely mad?</span><span class="opt">Optional</span></label>
+      <span class="hint">Be honest. This tells me more than the sweet things do.</span>
+      <textarea id="f_crazy" class="counted" maxlength="140" data-label="What drives you mad"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_place"><span class="qtext" data-alive="Is there a place in the house that belongs to them?" data-lost="Was there a place in the house that belonged to them?">Is there a place in the house that belongs to them?</span><span class="opt">Optional</span></label>
+      <input type="text" id="f_place" class="counted" maxlength="140" data-label="Their place in the house">
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_sad"><span class="qtext" data-alive="What do they do when you're sad or unwell?" data-lost="What did they do when you were sad or unwell?">What do they do when you're sad or unwell?</span><span class="opt">Optional</span></label>
+      <textarea id="f_sad" class="counted" maxlength="140" data-label="When you're sad or unwell"></textarea>
+    </div>
+
+    <div class="nav"><button class="go" data-next>Continue</button><button class="back" data-back>Back</button></div>
+  </section>
+
+  <!-- CH 3 -->
+  <section class="chapter" data-ch="2">
+    <p class="ch-no">Chapter Three</p>
+    <h2>The two of you</h2>
+    <p class="ch-note">How you found each other, and who else was in the room.</p>
+
+    <div class="field">
+      <label class="q">How did they come into your life?<span class="opt">Optional</span></label>
+      <div class="chips" data-single="came" data-label="How they came into your life">
+        <button type="button" class="chip">I chose them</button>
+        <button type="button" class="chip">They chose me</button>
+        <button type="button" class="chip">I found them on the street</button>
+        <button type="button" class="chip">They were a gift</button>
+        <button type="button" class="chip">I rescued them</button>
+        <button type="button" class="chip">Another way</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_who"><span class="qtext" data-alive="Who else is in the home?" data-lost="Who else was in the home?">Who else is in the home?</span><span class="opt">Optional</span></label>
+      <span class="hint">People or other animals — you can give me names.</span>
+      <textarea id="f_who" class="counted" maxlength="140" data-label="Who else was in the home"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_sense"><span class="qtext" data-alive="Is there a sound, a smell or a touch of theirs that you love most?" data-lost="Is there a sound, a smell or a touch of theirs you still carry?">Is there a sound, a smell or a touch of theirs that you love most?</span><span class="opt">Optional</span></label>
+      <textarea id="f_sense" class="counted" maxlength="140" data-label="A sound, smell or touch"></textarea>
+    </div>
+
+    <div class="nav"><button class="go" data-next>Continue</button><button class="back" data-back>Back</button></div>
+  </section>
+
+  <!-- CH 4 -->
+  <section class="chapter" data-ch="3">
+    <p class="ch-no">Chapter Four</p>
+    <h2>And you</h2>
+    <p class="ch-note">A reading for someone in grief and a reading for someone simply curious aren't the same reading. This tells me which one you need.</p>
+
+    <div class="field">
+      <label class="q">What do you feel most, right now?</label>
+      <div class="chips tense-group" id="feel_alive" data-single="feel" data-label="What you feel most">
+        <button type="button" class="chip">Warmth</button>
+        <button type="button" class="chip">Playfulness</button>
+        <button type="button" class="chip">Worry</button>
+        <button type="button" class="chip">Curiosity</button>
+        <button type="button" class="chip">Gratitude</button>
+        <button type="button" class="chip">A little overwhelmed</button>
+      </div>
+      <div class="chips tense-group" id="feel_lost" data-single="feel" data-label="What you feel most">
+        <button type="button" class="chip">Longing</button>
+        <button type="button" class="chip">Guilt</button>
+        <button type="button" class="chip">Curiosity</button>
+        <button type="button" class="chip">Unease</button>
+        <button type="button" class="chip">Gratitude</button>
+        <button type="button" class="chip">I still can't accept it</button>
+      </div>
+      <p class="err" id="e_feel">Please choose one.</p>
+    </div>
+
+    <div class="branch" id="br_presence">
+      <div class="field">
+        <label class="q">Has there been a moment you felt them near, and wondered?<span class="opt">Optional</span></label>
+        <div class="chips" data-single="presence" data-label="Felt their presence">
+          <button type="button" class="chip">Yes</button>
+          <button type="button" class="chip">No</button>
+          <button type="button" class="chip">I'm not sure</button>
+        </div>
+        <div class="branch" id="br_presence_yes" style="margin-top:18px">
+          <label class="q" for="f_presence_txt" style="font-size:17px">Tell me about it.<span class="opt">Optional</span></label>
+          <textarea id="f_presence_txt" class="counted" maxlength="140" data-label="The moment you felt them"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="q" for="f_unsaid"><span class="qtext" data-alive="Is there something you wish you could say to them, if they could understand?" data-lost="What was left unsaid?">What was left unsaid?</span><span class="opt">Optional</span></label>
+      <textarea id="f_unsaid" class="counted" maxlength="140" data-label="What was left unsaid"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="q">What do you want from this reading?</label>
+      <div class="chips tense-group" id="want_alive" data-single="want" data-label="What you want from this reading">
+        <button type="button" class="chip">To feel closer to them</button>
+        <button type="button" class="chip">To understand something they do</button>
+        <button type="button" class="chip">Guidance on caring for them</button>
+        <button type="button" class="chip">Just curiosity</button>
+        <button type="button" class="chip">Some peace of mind</button>
+      </div>
+      <div class="chips tense-group" id="want_lost" data-single="want" data-label="What you want from this reading">
+        <button type="button" class="chip">To know they're alright</button>
+        <button type="button" class="chip">To hear they forgave me</button>
+        <button type="button" class="chip">To feel them again</button>
+        <button type="button" class="chip">To understand something they did</button>
+        <button type="button" class="chip">Just peace</button>
+      </div>
+      <p class="err" id="e_want">Please choose one.</p>
+    </div>
+
+    <div class="nav"><button class="go" data-next>Continue</button><button class="back" data-back>Back</button></div>
+  </section>
+
+  <!-- CH 5 -->
+  <section class="chapter" data-ch="4">
+    <p class="ch-no">Chapter Five</p>
+    <h2>Anything else</h2>
+    <p class="ch-note">No question here. This is the part most people end up writing the most in.</p>
+
+    <div class="field">
+      <label class="q" for="f_open">Is there anything else you want to tell me?<span class="opt">Optional</span></label>
+      <span class="hint">Write however you like. No question, no limit — whatever is on your mind, whatever you've never said out loud. The more you share, the more the reading becomes yours.</span>
+      <textarea id="f_open" class="tall counted" maxlength="1400" data-label="In your own words"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="q">Their photographs<span class="opt">Optional</span></label>
+      <span class="hint">Up to 5. You don't have to — but seeing them helps.</span>
+      <div class="drop" id="drop" role="button" tabindex="0">
+        <p class="drop-t">Choose photographs</p>
+        <p class="drop-s"><span id="shotCount">0</span> of 5 chosen</p>
+      </div>
+      <p class="drop-note" id="dropNote"></p>
+      <input type="file" id="file" accept="image/*" multiple hidden>
+      <div class="shots" id="shots"></div>
+    </div>
+
+    <div class="nav"><button class="go" data-next>Review my answers</button><button class="back" data-back>Back</button></div>
+  </section>
+
+  <!-- REVIEW -->
+  <section class="chapter" data-ch="5">
+    <p class="ch-no">Last look</p>
+    <h2>Before I read</h2>
+    <p class="ch-note">Change anything you want. Once you continue, your reading image is created.</p>
+    <div id="review"></div>
+    <div class="nav"><button class="go" data-next>This is right — continue</button><button class="back" data-back>Back</button></div>
+  </section>
+
+  <!-- DONE -->
+  <section class="chapter" data-ch="6">
+    <p class="ch-no">One last step</p>
+    <h2>Send it to me</h2>
+    <p class="ch-note">Your answers become a single image, photographs included. It doesn't reach me automatically — send it through Etsy Messages and I'll begin.</p>
+
+    <div class="done-card">
+      <div class="done-step"><span class="done-n">1</span><span class="done-txt">Below, <strong>press and hold the image</strong> to save it to your phone. On a computer, use <strong>Download</strong>.</span></div>
+      <div class="done-step"><span class="done-n">2</span><span class="done-txt">Open <strong>Etsy Messages</strong> and start a message to <strong>KashnaUniverse</strong>.</span></div>
+      <div class="done-step"><span class="done-n">3</span><span class="done-txt">Attach the saved image.</span></div>
+      <div class="done-step"><span class="done-n">4</span><span class="done-txt">Your reading arrives as a PDF, within 24–48 hours.</span></div>
+    </div>
+
+    <div class="nav" style="border:none;padding-top:22px;margin-top:22px">
+      <button class="go" id="genBtn">Create my image</button>
+      <a class="back" id="dlLink" style="display:none" download="pet-reading.png">Download</a>
+      <button class="back" data-back>Back</button>
+    </div>
+    <img id="cardPreview" alt="Your pet reading answers, ready to send">
+
+    <div class="sig">
+      <strong>Ironbreaker</strong>
+      Written by hand. Never by a machine.
+    </div>
+
+    <p class="disclaimer">This reading is created for personal reflection, remembrance and entertainment. It is not medical, veterinary, psychological, legal or financial advice.</p>
+  </section>
+
+</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- intro paw ---------- */
+  var pad=document.getElementById('pad'),hint=document.getElementById('padHint'),
+      clipRect=document.getElementById('clipRect'),intro=document.getElementById('intro'),
+      app=document.getElementById('app');
+  var holding=false,prog=0,raf=null,opened=false;
+
+  function frame(){
+    if(holding){prog=Math.min(1,prog+0.016);}else{prog=Math.max(0,prog-0.03);}
+    clipRect.setAttribute('y',String(100-prog*100));
+    if(prog>=1&&!opened){open();return;}
+    if(prog>0||holding){raf=requestAnimationFrame(frame);}else{raf=null;}
+  }
+  function start(e){if(e&&e.cancelable)e.preventDefault();holding=true;hint.textContent='Keep holding';if(!raf)raf=requestAnimationFrame(frame);}
+  function stop(){holding=false;if(!opened)hint.textContent='Press and hold';if(!raf)raf=requestAnimationFrame(frame);}
+  function open(){
+    opened=true;pad.classList.add('done');hint.textContent='';
+    setTimeout(function(){intro.style.display='none';app.style.display='block';window.scrollTo(0,0);},420);
+  }
+  pad.addEventListener('pointerdown',start);
+  pad.addEventListener('pointerup',stop);
+  pad.addEventListener('pointerleave',stop);
+  pad.addEventListener('pointercancel',stop);
+  pad.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();start();}});
+  pad.addEventListener('keyup',function(e){if(e.key===' '||e.key==='Enter'){stop();}});
+
+  /* ---------- chapters ---------- */
+  var chapters=[].slice.call(document.querySelectorAll('.chapter'));
+  var stepsBox=document.getElementById('steps');
+  var pawSVG='<svg viewBox="0 0 100 100"><path d="M50 48c12 0 22 8 22 18s-10 14-22 14-22-4-22-14 10-18 22-18z"/><ellipse cx="27" cy="30" rx="8" ry="11"/><ellipse cx="43" cy="20" rx="7.5" ry="11"/><ellipse cx="60" cy="20" rx="7.5" ry="11"/><ellipse cx="76" cy="30" rx="8" ry="11"/></svg>';
+  for(var i=0;i<5;i++){var d=document.createElement('span');d.className='step-dot';d.innerHTML=pawSVG;stepsBox.appendChild(d);}
+  var dots=[].slice.call(stepsBox.children);
+  var cur=0;
+
+  function show(n){
+    chapters[cur].classList.remove('on');
+    cur=n;
+    chapters[cur].classList.add('on');
+    dots.forEach(function(d,i){d.classList.toggle('on',i<=cur&&cur<5);});
+    window.scrollTo(0,0);
+  }
+
+  /* ---------- tense-aware content ---------- */
+  function applyTense(status){
+    var isLost=(status==='I lost them');
+    document.querySelectorAll('.qtext[data-alive]').forEach(function(el){
+      el.textContent = isLost ? el.getAttribute('data-lost') : el.getAttribute('data-alive');
+    });
+    ['feel','want'].forEach(function(k){
+      document.getElementById(k+'_alive').classList.toggle('on',!isLost);
+      document.getElementById(k+'_lost').classList.toggle('on',isLost);
+      document.getElementById(k+'_alive').querySelectorAll('.chip').forEach(function(c){c.classList.remove('sel');});
+      document.getElementById(k+'_lost').querySelectorAll('.chip').forEach(function(c){c.classList.remove('sel');});
+      delete single[k];
+    });
+  }
+
+  /* ---------- chips (single-select) ---------- */
+  var single={};
+  document.querySelectorAll('.chips').forEach(function(box){
+    var sKey=box.getAttribute('data-single');
+    if(!sKey)return;
+    box.querySelectorAll('.chip').forEach(function(chip){
+      chip.addEventListener('click',function(){
+        box.querySelectorAll('.chip').forEach(function(c){c.classList.remove('sel');});
+        chip.classList.add('sel');
+        single[sKey]=chip.textContent;
+        if(sKey==='status'){
+          var lost=(chip.textContent==='I lost them');
+          document.getElementById('br_lost').classList.toggle('on',lost);
+          document.getElementById('br_presence').classList.toggle('on',lost);
+          applyTense(chip.textContent);
+        }
+        if(sKey==='presence'){
+          document.getElementById('br_presence_yes').classList.toggle('on',chip.textContent==='Yes');
+        }
+      });
+    });
+  });
+
+  /* ---------- character counters ---------- */
+  document.querySelectorAll('.counted').forEach(function(el){
+    var max=parseInt(el.getAttribute('maxlength'),10)||140;
+    var c=document.createElement('div');
+    c.className='counter';
+    c.textContent='0/'+max;
+    el.insertAdjacentElement('afterend',c);
+    el.addEventListener('input',function(){
+      c.textContent=el.value.length+'/'+max;
+    });
+  });
+
+  /* ---------- photos ---------- */
+  var files=[],urls=[],drop=document.getElementById('drop'),input=document.getElementById('file'),
+      shots=document.getElementById('shots'),shotCount=document.getElementById('shotCount'),
+      dropNote=document.getElementById('dropNote'),dropNoteTimer=null;
+
+  function showDropNote(msg){
+    dropNote.textContent=msg;dropNote.style.opacity='1';
+    clearTimeout(dropNoteTimer);
+    dropNoteTimer=setTimeout(function(){dropNote.style.opacity='0';},3800);
+  }
+
+  drop.addEventListener('click',function(){ if(files.length<5) input.click(); });
+  drop.addEventListener('keydown',function(e){
+    if((e.key==='Enter'||e.key===' ')&&files.length<5){e.preventDefault();input.click();}
+  });
+  input.addEventListener('change',function(){
+    var incoming=[].slice.call(input.files);
+    var room=5-files.length;
+    var added=incoming.slice(0,room);
+    added.forEach(function(f){files.push(f);});
+    input.value='';
+    if(incoming.length>added.length){
+      showDropNote(added.length? 'Only 5 photos allowed — kept the first '+files.length+'.' : 'You already have 5 photographs.');
+    }
+    paint();
+  });
+  function paint(){
+    shots.innerHTML='';
+    files.forEach(function(f,idx){
+      var url=urls[idx]||(urls[idx]=URL.createObjectURL(f));
+      var w=document.createElement('div');w.className='shot';
+      var img=document.createElement('img');img.alt='';img.src=url;
+      var x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label','Remove photo');
+      x.addEventListener('click',function(){
+        URL.revokeObjectURL(urls[idx]);
+        files.splice(idx,1);urls.splice(idx,1);paint();
+      });
+      w.appendChild(img);w.appendChild(x);shots.appendChild(w);
+    });
+    shotCount.textContent=String(files.length);
+    var full=files.length>=5;
+    drop.classList.toggle('full',full);
+    drop.querySelector('.drop-t').textContent = full ? 'All 5 chosen' : 'Choose photographs';
+  }
+
+  /* ---------- validation ---------- */
+  function need(id,errId){
+    var el=document.getElementById(id),err=document.getElementById(errId);
+    if(!el.value.trim()){err.classList.add('on');el.focus();return false;}
+    err.classList.remove('on');return true;
+  }
+  function needChip(key,errId){
+    var err=document.getElementById(errId);
+    if(!single[key]){err.classList.add('on');return false;}
+    err.classList.remove('on');return true;
+  }
+  function valid(n){
+    if(n===0){var ok=need('f_name','e_name');ok=need('f_species','e_species')&&ok;ok=need('f_age','e_age')&&ok;ok=needChip('status','e_status')&&ok;return ok;}
+    if(n===1)return needChip('type','e_type');
+    if(n===3){var o=needChip('feel','e_feel');o=needChip('want','e_want')&&o;return o;}
+    return true;
+  }
+
+  /* ---------- review / data map ---------- */
+  var MAP=[
+    {t:'Who they are',ch:0,rows:[['Name','f_name'],['Nickname','f_nick'],['Species / breed','f_species'],['Age','f_age'],['Where they are',{s:'status'}],['When you lost them',{s:'when'}],['How it happened',{s:'how'}]]},
+    {t:'Who they really are',ch:1,rows:[['Their nature',{s:'type'}],['Their strange habit','f_habit'],['What drives you mad','f_crazy'],['Their place in the house','f_place'],['When you are sad or unwell','f_sad']]},
+    {t:'The two of you',ch:2,rows:[['How they came into your life',{s:'came'}],['Who else was in the home','f_who'],['A sound, smell or touch','f_sense']]},
+    {t:'And you',ch:3,rows:[['What you feel most',{s:'feel'}],['Felt their presence',{s:'presence'}],['That moment','f_presence_txt'],['What was left unsaid','f_unsaid'],['What you want from this reading',{s:'want'}]]},
+    {t:'Anything else',ch:4,rows:[['In your own words','f_open']]}
+  ];
+  function val(src){
+    if(typeof src==='string'){var el=document.getElementById(src);return el?el.value.trim():'';}
+    if(src&&src.s)return single[src.s]||'';
+    return '';
+  }
+  function buildReview(){
+    var box=document.getElementById('review');box.innerHTML='';
+    MAP.forEach(function(sec){
+      var block=document.createElement('div');block.className='rev-block';
+      var head=document.createElement('div');head.className='rev-head';
+      head.innerHTML='<span class="rev-title">'+sec.t+'</span>';
+      var b=document.createElement('button');b.className='rev-edit';b.type='button';b.textContent='Edit';
+      b.addEventListener('click',function(){show(sec.ch);});
+      head.appendChild(b);block.appendChild(head);
+      var any=false;
+      sec.rows.forEach(function(r){
+        var v=val(r[1]);if(!v)return;any=true;
+        var row=document.createElement('div');row.className='rev-row';
+        row.innerHTML='<div class="rev-q">'+r[0]+'</div><div class="rev-a"></div>';
+        row.querySelector('.rev-a').textContent=v;
+        block.appendChild(row);
+      });
+      if(sec.ch===4&&files.length){
+        any=true;
+        var row2=document.createElement('div');row2.className='rev-row';
+        row2.innerHTML='<div class="rev-q">Photographs</div><div class="rev-a">'+files.length+' chosen</div>';
+        block.appendChild(row2);
+      }
+      if(any)box.appendChild(block);
+    });
+  }
+
+  /* ---------- image card generation ---------- */
+  function loadImg(file){
+    return new Promise(function(resolve){
+      var url=URL.createObjectURL(file);
+      var img=new Image();
+      img.onload=function(){resolve({img:img,url:url});};
+      img.onerror=function(){resolve(null);};
+      img.src=url;
+    });
+  }
+  function wrapLines(ctx,text,maxWidth){
+    var out=[];
+    String(text).split('\n').forEach(function(p){
+      var words=p.split(' '),line='';
+      words.forEach(function(w){
+        var test=line?line+' '+w:w;
+        if(ctx.measureText(test).width>maxWidth&&line){out.push(line);line=w;}else{line=test;}
+      });
+      out.push(line);
+    });
+    return out;
+  }
+  function roundRectPath(c,x,y,w,h,r){
+    c.beginPath();
+    c.moveTo(x+r,y);
+    c.arcTo(x+w,y,x+w,y+h,r);
+    c.arcTo(x+w,y+h,x,y+h,r);
+    c.arcTo(x,y+h,x,y,r);
+    c.arcTo(x,y,x+w,y,r);
+    c.closePath();
+  }
+  async function buildCardImage(){
+    try{
+      if(document.fonts&&document.fonts.ready){
+        await Promise.race([document.fonts.ready,new Promise(function(r){setTimeout(r,800);})]);
+      }
+    }catch(e){}
+
+    var W=1100,PAD=70,CW=W-PAD*2;
+    var work=document.createElement('canvas');work.width=W;work.height=6000;
+    var ctx=work.getContext('2d');
+
+    ctx.fillStyle='#1B1416';ctx.fillRect(0,0,W,work.height);
+    var g=ctx.createRadialGradient(W/2,-100,50,W/2,-100,W*0.9);
+    g.addColorStop(0,'rgba(217,161,91,.16)');g.addColorStop(1,'rgba(217,161,91,0)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,900);
+
+    var y=PAD;
+    var petName=(document.getElementById('f_name').value.trim())||'Your Pet';
+
+    ctx.fillStyle='#D9A15B';
+    ctx.font='500 15px Karla, sans-serif';
+    ctx.fillText('IRONBREAKER FORESEES',PAD,y);y+=42;
+    ctx.fillStyle='#F3EAE0';
+    ctx.font='300 50px Fraunces, Georgia, serif';
+    ctx.fillText(petName+'\u2019s Pet Reading',PAD,y);y+=34;
+    ctx.strokeStyle='rgba(243,234,224,.2)';ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(W-PAD,y);ctx.stroke();
+    y+=54;
+
+    if(files.length){
+      var loaded=(await Promise.all(files.map(loadImg))).filter(Boolean);
+      var cols=Math.min(3,loaded.length),gap=18;
+      var tile=(CW-gap*(cols-1))/cols;
+      loaded.forEach(function(item,i){
+        var col=i%cols,row=Math.floor(i/cols);
+        var x=PAD+col*(tile+gap),ty=y+row*(tile+gap);
+        ctx.save();
+        roundRectPath(ctx,x,ty,tile,tile,10);ctx.clip();
+        var iw=item.img.width,ih=item.img.height;
+        var scale=Math.max(tile/iw,tile/ih);
+        var dw=iw*scale,dh=ih*scale;
+        ctx.drawImage(item.img,x-(dw-tile)/2,ty-(dh-tile)/2,dw,dh);
+        ctx.restore();
+        URL.revokeObjectURL(item.url);
+      });
+      var rows=Math.ceil(loaded.length/cols);
+      y+=rows*tile+(rows-1)*gap+56;
+    }
+
+    MAP.forEach(function(sec){
+      var rows=sec.rows.map(function(r){return [r[0],val(r[1])];}).filter(function(r){return r[1];});
+      if(!rows.length)return;
+      ctx.fillStyle='#93A68B';
+      ctx.font='500 13px Karla, sans-serif';
+      ctx.fillText(sec.t.toUpperCase(),PAD,y);y+=34;
+      rows.forEach(function(r){
+        ctx.fillStyle='#D9A15B';
+        ctx.font='500 15px Karla, sans-serif';
+        ctx.fillText(r[0],PAD,y);y+=28;
+        ctx.fillStyle='#F3EAE0';
+        ctx.font='300 22px Fraunces, Georgia, serif';
+        wrapLines(ctx,r[1],CW).forEach(function(ln){ctx.fillText(ln,PAD,y);y+=30;});
+        y+=18;
+      });
+      y+=14;
+    });
+
+    y+=20;
+    ctx.strokeStyle='rgba(243,234,224,.2)';ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(W-PAD,y);ctx.stroke();
+    y+=50;
+    ctx.textAlign='center';
+    ctx.fillStyle='#F3EAE0';
+    ctx.font='300 24px Fraunces, Georgia, serif';
+    ctx.fillText('Ironbreaker',W/2,y);y+=26;
+    ctx.fillStyle='#BFB0A6';
+    ctx.font='300 14px Karla, sans-serif';
+    ctx.fillText('Sent to be read by hand, not by a machine.',W/2,y);
+    ctx.textAlign='left';
+    y+=PAD;
+
+    var finalH=Math.ceil(y);
+    var out=document.createElement('canvas');out.width=W;out.height=finalH;
+    out.getContext('2d').drawImage(work,0,0,W,finalH,0,0,W,finalH);
+    return out.toDataURL('image/png');
+  }
+
+  /* ---------- nav ---------- */
+  document.querySelectorAll('[data-next]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      if(!valid(cur))return;
+      if(cur===4)buildReview();
+      var goingToDone=(cur===5);
+      show(cur+1);
+      if(goingToDone){var g=document.getElementById('genBtn');if(g)g.click();}
+    });
+  });
+  document.querySelectorAll('[data-back]').forEach(function(btn){
+    btn.addEventListener('click',function(){show(Math.max(0,cur-1));});
+  });
+
+  document.getElementById('genBtn').addEventListener('click',async function(){
+    var btn=this;btn.disabled=true;btn.textContent='Preparing…';
+    try{
+      var dataUrl=await buildCardImage();
+      var img=document.getElementById('cardPreview');
+      img.src=dataUrl;img.style.display='block';
+      var dl=document.getElementById('dlLink');
+      var safe=(document.getElementById('f_name').value.trim()||'pet').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+      dl.href=dataUrl;dl.download='pet-reading-'+safe+'.png';dl.style.display='inline-block';
+      btn.textContent='Recreate image';
+    }catch(e){
+      btn.textContent='Something went wrong — tap to try again';
+    }
+    btn.disabled=false;
+  });
+
+})();
+</script>
+</body>
+</html>
